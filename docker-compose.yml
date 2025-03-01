@@ -99,38 +99,6 @@ services:
       - homepage.widget.type=radarr
       - homepage.widget.url=http://radarr:7878/radarr
       - homepage.widget.key=${RADARR_API_KEY}
-  lidarr:
-    image: lscr.io/linuxserver/lidarr
-    container_name: lidarr
-    environment:
-      - PUID=${USER_ID}
-      - PGID=${GROUP_ID}
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${CONFIG_ROOT:-.}/lidarr:/config
-      - ${DATA_ROOT}:/data
-    restart: always
-    healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:8686/lidarr/ping" ]
-      interval: 30s
-      retries: 10
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.lidarr.rule=(Host(`${HOSTNAME}`) && PathPrefix(`/lidarr`))
-      - traefik.http.routers.lidarr.tls=true
-      - traefik.http.routers.lidarr.tls.certresolver=myresolver
-      - traefik.http.services.lidarr.loadbalancer.server.port=8686
-      - homepage.group=Media
-      - homepage.name=Lidarr
-      - homepage.icon=lidarr.png
-      - homepage.href=/lidarr
-      - homepage.description=Music management
-      - homepage.weight=2
-      - homepage.widget.type=lidarr
-      - homepage.widget.url=http://lidarr:8686/lidarr
-      - homepage.widget.key=${LIDARR_API_KEY}
-    profiles:
-      - lidarr
   bazarr:
     image: lscr.io/linuxserver/bazarr
     container_name: bazarr
