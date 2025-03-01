@@ -452,8 +452,6 @@ services:
       - RADARR_KEY=${RADARR_API_KEY}
       - SONARR_URL=http://sonarr:8989/sonarr
       - SONARR_KEY=${SONARR_API_KEY}
-      - LIDARR_URL=http://lidarr:8686/lidarr
-      - LIDARR_KEY=${LIDARR_API_KEY}
       - QBITTORRENT_URL=http://qbittorrent:8080
       - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME}
       - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD}
