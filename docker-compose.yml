@@ -381,7 +381,7 @@ services:
       - QBITTORRENT_URL=http://qbittorrent:8080
       - QBITTORRENT_USERNAME=${QBITTORRENT_USERNAME}
       - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD}
-      - LOG_LEVEL=${DECLUTTARR_LOG_LEVEL}
+      - LOG_LEVEL=INFO
       - TEST_RUN=${DECLUTTARR_TEST_RUN}
       - REMOVE_TIMER=${DECLUTTARR_REMOVE_TIMER}
       - REMOVE_FAILED=${DECLUTTARR_REMOVE_FAILED}
@@ -441,48 +441,53 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  #gitea:
-  #  image: gitea/gitea:latest
-  #  container_name: gitea
-  #  hostname: (Host(`${GITEA_HOSTNAME}`))
-  #  environment:
-  #    - USER_UID=${USER_ID}
-  #    - USER_GID=${GROUP_ID}
-  #    - TZ=${TIMEZONE}
-  #    - "GITEA__database__DB_TYPE=mysql"
-  #    - "GITEA__database__NAME=gitea"
-  #    - "GITEA__database__HOST=gitea_db:3306"
-  #    - "GITEA__database__USER=gitea"
-  #    - "GITEA__database__PASSWD=${GITEA_MYSQL_PASSWORD}"
-  #    - "GITEA__database__DB_NAME=gitea"
-  #  volumes:
-  #    - ${DATA_ROOT}/gitea:/data
-  #  ports:
-  #    - "3005:3005"
-  #    - "222:22"
-  #  restart: "unless-stopped"
-  #  depends_on:
-  #    - "gitea_db"
-  #  labels:
-  #    - "com.centurylinklabs.watchtower.enable=true"
-  #    - traefik.enable=true
-  #    - traefik.http.routers.gitea.rule=(Host(`${GITEA_HOSTNAME}`))
-  #    - traefik.http.routers.gitea.tls=true
-  #    - traefik.http.routers.gitea.tls.certresolver=myresolver
-  #    - traefik.http.services.gitea.loadbalancer.server.port=3005
+  gitea:
+    image:  docker.gitea.com/gitea:latest
+    container_name: gitea
+    hostname: (Host(`${GITEA_HOSTNAME}`))
+    environment:
+      - USER_UID=${USER_ID}
+      - USER_GID=${GROUP_ID}
+      - TZ=${TIMEZONE}
+      - "GITEA__database__DB_TYPE=mysql"
+      - "GITEA__database__NAME=gitea"
+      - "GITEA__database__HOST=gitea_db:3306"
+      - "GITEA__database__USER=gitea"
+      - "GITEA__database__PASSWD=${GITEA_MYSQL_PASSWORD}"
+    volumes:
+      - ${DATA_ROOT}/gitea:/data
+    ports:
+      - "3005:3005"
+      - "222:22"
+    restart: "unless-stopped"
+    depends_on:
+      gitea_db:
+        condition: service_healthy
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - traefik.enable=true
+      - traefik.http.routers.gitea.rule=(Host(`${GITEA_HOSTNAME}`))
+      - traefik.http.routers.gitea.tls=true
+      - traefik.http.routers.gitea.tls.certresolver=myresolver
+      - traefik.http.services.gitea.loadbalancer.server.port=3005
       
-  #gitea_db:
-  #  image: docker.io/library/mysql:8
-  #  container_name: gitea_db
-  #  restart: always
-  #  environment:
-  #  - MYSQL_DATABASE=gitea
-  #  - MYSQL_ROOT_PASSWORD=${GITEA_MYSQL_ROOT_PASSWORD}
-  #  - MYSQL_USER=gitea
-  #  - MYSQL_PASSWORD=${GITEA_MYSQL_PASSWORD}
-  #  volumes:
-  #  - "${CONFIG_ROOT:-.}/gitea/db:/var/lib/mysql"
-    
+  gitea_db:
+    image: docker.io/library/mysql:8
+    container_name: gitea_db
+    restart: always
+    environment:
+    - MYSQL_DATABASE=gitea
+    - MYSQL_ROOT_PASSWORD=${GITEA_MYSQL_ROOT_PASSWORD}
+    - MYSQL_USER=gitea
+    - MYSQL_PASSWORD=${GITEA_MYSQL_PASSWORD}
+    volumes:
+    - ${CONFIG_ROOT:-.}/gitea/mysqldb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${GITEA_MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
